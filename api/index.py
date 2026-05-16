@@ -71,7 +71,7 @@ class handler(BaseHTTPRequestHandler):
                     "metrics": {"distribution": distribution, "status_breakdown": statuses, "active_escalations_count": len(escalations_res.data)}
                 })
 
-            # 6. GET: Governance Report Data Exporter (CSV Stream)
+            
             elif url_path == "/api/export_csv":
                 response = supabase.table('goals').select('title, thrust_area, uom_type, target, weightage, user_id, check_ins(quarter, actual_achievement, progress_score, status)').execute()
                 output = io.StringIO()
