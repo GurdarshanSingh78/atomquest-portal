@@ -243,7 +243,7 @@ export default function Home() {
             </div>
 
             <p className="aq-eyebrow">Enterprise Alignment</p>
-            <h1 className="aq-h1">ManSathi<br/>Nexus</h1>
+            <h1 className="aq-h1">Nexus<br/>Tracker</h1>
             <p className="aq-tagline">Map operations. Audit progress. Close the performance feedback loop natively across your structural nodes.</p>
 
             <div className="aq-stats">
@@ -282,7 +282,7 @@ export default function Home() {
 
             <div className="social-link-panel">
               <a href="https://github.com/GurdarshanSingh78" target="_blank" rel="noreferrer" className="social-card gh">GitHub Profile</a>
-              <a href="https://linkedin.com/in/your-username-placeholder" target="_blank" rel="noreferrer" className="social-card li">LinkedIn Link</a>
+              <a href="https://www.linkedin.com/in/gurdarshan-singh-9b11052b3/" target="_blank" rel="noreferrer" className="social-card li">LinkedIn Link</a>
             </div>
           </div>
         </div>
@@ -291,7 +291,7 @@ export default function Home() {
           <p className="aq-bar-l">built by <span>Gurdarshan Singh</span></p>
           <p className="aq-bar-r">
             <a href="https://github.com/GurdarshanSingh78" target="_blank" rel="noreferrer">GitHub</a> · 
-            <a href="https://linkedin.com/in/your-username-placeholder" target="_blank" rel="noreferrer">LinkedIn</a>
+            <a href="https://www.linkedin.com/in/gurdarshan-singh-9b11052b3/" target="_blank" rel="noreferrer">LinkedIn</a>
           </p>
         </div>
       </div>
