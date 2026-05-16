@@ -1,0 +1,51 @@
+import json
+from http.server import BaseHTTPRequestHandler
+from db import get_db
+
+class handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        try:
+            supabase = get_db()
+            
+            # 1. Fetch the latest Audit Logs (Descending order)
+            logs_response = supabase.table('audit_logs').select('*').order('changed_at', desc=True).limit(20).execute()
+            
+            # 2. Fetch all goals to populate stats and administrative override consoles
+            goals_response = supabase.table('goals').select('*').execute()
+            goals = goals_response.data
+            
+            total_goals = len(goals)
+            locked_goals = sum(1 for g in goals if g.get('is_locked') == True)
+            
+            alignment_percentage = int((locked_goals / total_goals * 100)) if total_goals > 0 else 0
+            
+            return self.send_json_response(200, {
+                "success": True, 
+                "data": {
+                    "audit_logs": logs_response.data,
+                    "goals": goals,
+                    "stats": {
+                        "total_locked": locked_goals,
+                        "alignment_score": alignment_percentage
+                    }
+                }
+            })
+            
+        except Exception as e:
+            return self.send_json_response(500, {"error": f"System Exception: {str(e)}"})
+
+    def send_json_response(self, status_code, payload):
+        self.send_response(status_code)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*') 
+        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+        self.wfile.write(json.dumps(payload).encode('utf-8'))
+        
+    def do_OPTIONS(self):
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
