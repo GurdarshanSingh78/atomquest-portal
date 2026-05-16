@@ -121,7 +121,7 @@ class handler(BaseHTTPRequestHandler):
             # 1. POST: Employee Goal Sheet Submissions
             if url_path == "/api/submit_goals":
                 goals = data.get('goals', [])
-                user_id = data.get('user_id', 'demo-employee-001')
+                user_id = data.get('user_id', '00000000-0000-0000-0000-000000000001')
                 
                 if not goals or len(goals) > 8:
                     return self.send_json_response(400, {"error": "Validation breach: Maximum limit is 8 goals."})

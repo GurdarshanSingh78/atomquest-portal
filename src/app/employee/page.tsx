@@ -84,7 +84,7 @@ export default function EmployeeDashboard() {
       const response = await fetch("/api/submit_goals", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: "demo-employee-001", goals })
+        body: JSON.stringify({ user_id: "00000000-0000-0000-0000-000000000001", goals })
       });
       const data = await response.json();
       if (response.ok) {
