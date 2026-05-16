@@ -14,6 +14,7 @@ export default function EmployeeDashboard() {
   const [calculatedScores, setCalculatedScores] = useState<{ [key: string]: number }>({});
 
   const totalWeightage = goals.reduce((sum, goal) => sum + Number(goal.weightage || 0), 0);
+  const hasInvalidWeightage = goals.some(g => Number(g.weightage || 0) < 10);
 
   useEffect(() => {
     fetchGoalsAndDrafts();
@@ -68,6 +69,16 @@ export default function EmployeeDashboard() {
   };
 
   const transmitData = async () => {
+    // Strict client-side validation guardrails
+    if (hasInvalidWeightage) {
+      setStatus({ state: "error", message: "VALIDATION REJECT: EVERY INDIVIDUAL GOAL MUST HAVE A MINIMUM WEIGHTAGE OF 10%." });
+      return;
+    }
+    if (totalWeightage !== 100) {
+      setStatus({ state: "error", message: "VALIDATION REJECT: TOTAL AGGREGATED WEIGHTAGE MUST EQUAL EXACTLY 100%." });
+      return;
+    }
+
     setStatus({ state: "loading", message: "ESTABLISHING UPLINK TO CORE LEDGER..." });
     try {
       const response = await fetch("/api/submit_goals", {
@@ -83,7 +94,7 @@ export default function EmployeeDashboard() {
         setStatus({ state: "error", message: `SYSTEM REJECT: ${data.error}` });
       }
     } catch (error) {
-      setStatus({ state: "error", message: "CRITICAL FAILURE: BACKEND UNREACHABLE." });
+      setStatus({ state: "error", message: "NETWORK ERROR: IF TESTING LOCALLY, USE 'VERCEL DEV' INSTEAD OF 'NPM RUN DEV' TO EMULATE BACKEND ROUTING NATIVELY." });
     }
   };
 
@@ -180,7 +191,7 @@ export default function EmployeeDashboard() {
 
           {/* Terminal Logs */}
           {status.state !== "idle" && (
-            <div className={`mb-6 p-4 rounded-lg border mono-text text-xs tracking-widest uppercase ${status.state === 'success' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400' : status.state === 'error' ? 'bg-red-500/10 border-red-500 text-red-500' : 'bg-gray-500/10 border-gray-400 animate-pulse'}`}>
+            <div className={`mb-6 p-4 rounded-lg border mono-text text-xs tracking-widest uppercase ${status.state === 'success' ? 'bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400' : 'bg-red-500/10 border-red-500 text-red-500'}`}>
               &amp;gt; {status.message}
             </div>
           )}
@@ -232,7 +243,8 @@ export default function EmployeeDashboard() {
                       </div>
                       <div className="col-span-2">
                         <label className="mono-text text-[10px] uppercase tracking-widest mb-2 block text-cyan-500 font-bold">Weightage Allocation (%)</label>
-                        <input type="number" className="glass-input w-full p-2.5 rounded-lg text-sm text-cyan-600 dark:text-cyan-300 font-bold" value={goal.weightage} onChange={(e) => updateGoal(index, "weightage", Number(e.target.value))} />
+                        <input type="number" className={`glass-input w-full p-2.5 rounded-lg text-sm font-bold ${Number(goal.weightage || 0) < 10 ? 'border-red-500 text-red-400' : 'text-cyan-600 dark:text-cyan-300'}`} value={goal.weightage} onChange={(e) => updateGoal(index, "weightage", Number(e.target.value))} />
+                        {Number(goal.weightage || 0) < 10 && <span className="text-[9px] text-red-500 font-mono mt-1 block">[⚠️ Minimum bound: 10%]</span>}
                       </div>
                     </div>
                   </div>
@@ -246,9 +258,9 @@ export default function EmployeeDashboard() {
                 <div className="flex items-center gap-6">
                   <div className="text-right">
                     <div className="mono-text text-[10px] opacity-50 tracking-widest uppercase">Total Aggregation</div>
-                    <div className={`text-2xl font-bold mono-text ${totalWeightage === 100 ? 'text-cyan-500 dark:text-cyan-400 cyan-glow' : 'text-red-500'}`}>{totalWeightage}%</div>
+                    <div className={`text-2xl font-bold mono-text ${totalWeightage === 100 && !hasInvalidWeightage ? 'text-cyan-500 dark:text-cyan-400 cyan-glow' : 'text-red-500'}`}>{totalWeightage}%</div>
                   </div>
-                  <button onClick={transmitData} disabled={totalWeightage !== 100} className={`mono-text text-xs tracking-widest px-8 py-3 rounded-lg transition-all ${totalWeightage === 100 ? 'bg-cyan-500 text-white dark:text-black font-bold hover:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'}`}>
+                  <button onClick={transmitData} disabled={totalWeightage !== 100 || hasInvalidWeightage} className={`mono-text text-xs tracking-widest px-8 py-3 rounded-lg transition-all ${totalWeightage === 100 && !hasInvalidWeightage ? 'bg-cyan-500 text-white dark:text-black font-bold hover:bg-cyan-600' : 'bg-gray-300 dark:bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'}`}>
                     TRANSMIT STRUCTURE
                   </button>
                 </div>

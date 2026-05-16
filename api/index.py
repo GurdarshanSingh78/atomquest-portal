@@ -114,21 +114,30 @@ class handler(BaseHTTPRequestHandler):
             data = json.loads(body) if body else {}
             
             # 1. POST: Employee Goal Sheet Submissions
+# 1. POST: Employee Goal Sheet Submissions
             if url_path == "/api/submit_goals":
                 goals = data.get('goals', [])
                 user_id = data.get('user_id', 'demo-employee-001')
-                if not goals or len(goals) > 8:
-                    return self.send_json_response(400, {"error": "Validation breach: Core constraint out of bounds."})
                 
-                # Delete existing unapproved drafts to prevent duplicates
+                if not goals or len(goals) > 8:
+                    return self.send_json_response(400, {"error": "Validation breach: Maximum limit is 8 goals."})
+                
+                # Server-side boundary check validation
+                total_w = sum(float(g.get('weightage', 0)) for g in goals)
+                if total_w != 100:
+                    return self.send_json_response(400, {"error": "Validation breach: Total weightage must equal exactly 100%."})
+                
+                if any(float(g.get('weightage', 0)) < 10 for g in goals):
+                    return self.send_json_response(400, {"error": "Validation breach: Every individual goal requires a minimum weightage of 10%."})
+                
+                # Clear past drafts and perform insert operations
                 supabase.table('goals').delete().eq('user_id', user_id).eq('is_locked', False).execute()
                 
-                records = []
-                for g in goals:
-                    records.append({
-                        "user_id": user_id, "title": g['title'], "thrust_area": g['thrustArea'],
-                        "uom_type": g['uom'], "target": str(g['target']), "weightage": float(g['weightage']), "is_locked": False
-                    })
+                records = [{
+                    "user_id": user_id, "title": g['title'], "thrust_area": g['thrustArea'],
+                    "uom_type": g['uom'], "target": str(g['target']), "weightage": float(g['weightage']), "is_locked": False
+                } for g in goals]
+                
                 res = supabase.table('goals').insert(records).execute()
                 return self.send_json_response(200, {"success": True, "data": res.data})
 
