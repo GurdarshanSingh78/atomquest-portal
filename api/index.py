@@ -1,9 +1,14 @@
+import os
+import sys
 import json
 import csv
 import io
 from http.server import BaseHTTPRequestHandler
 from urllib.parse import urlparse
 from datetime import datetime
+
+# Bulletproof path injection: Forces Vercel to look inside the /api directory context for modules
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from db import get_db
 
 class handler(BaseHTTPRequestHandler):
@@ -114,7 +119,6 @@ class handler(BaseHTTPRequestHandler):
             data = json.loads(body) if body else {}
             
             # 1. POST: Employee Goal Sheet Submissions
-# 1. POST: Employee Goal Sheet Submissions
             if url_path == "/api/submit_goals":
                 goals = data.get('goals', [])
                 user_id = data.get('user_id', 'demo-employee-001')
@@ -122,7 +126,7 @@ class handler(BaseHTTPRequestHandler):
                 if not goals or len(goals) > 8:
                     return self.send_json_response(400, {"error": "Validation breach: Maximum limit is 8 goals."})
                 
-                # Server-side boundary check validation
+                # Server-side boundary validation
                 total_w = sum(float(g.get('weightage', 0)) for g in goals)
                 if total_w != 100:
                     return self.send_json_response(400, {"error": "Validation breach: Total weightage must equal exactly 100%."})
@@ -133,9 +137,15 @@ class handler(BaseHTTPRequestHandler):
                 # Clear past drafts and perform insert operations
                 supabase.table('goals').delete().eq('user_id', user_id).eq('is_locked', False).execute()
                 
+                # Using safe dict lookups (.get) to eliminate KeyError crashes
                 records = [{
-                    "user_id": user_id, "title": g['title'], "thrust_area": g['thrustArea'],
-                    "uom_type": g['uom'], "target": str(g['target']), "weightage": float(g['weightage']), "is_locked": False
+                    "user_id": user_id, 
+                    "title": g.get('title', 'Untitled Objective'), 
+                    "thrust_area": g.get('thrustArea', 'Process'),
+                    "uom_type": g.get('uom', 'Min_Numeric'), 
+                    "target": str(g.get('target', '0')), 
+                    "weightage": float(g.get('weightage', 10)), 
+                    "is_locked": False
                 } for g in goals]
                 
                 res = supabase.table('goals').insert(records).execute()
@@ -179,7 +189,6 @@ class handler(BaseHTTPRequestHandler):
 
                 rounded_score = round(score, 2)
                 
-                # Cascade Sync Engine
                 linked_goals = supabase.table('goals').select('id').eq('parent_goal_id', goal_id).execute()
                 all_ids = [goal_id] + [g['id'] for g in linked_goals.data]
                 
