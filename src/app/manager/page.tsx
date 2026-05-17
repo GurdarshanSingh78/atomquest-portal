@@ -79,7 +79,7 @@ export default function ManagerDashboard() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           goal_id: dbId, 
-          manager_id: "demo-manager-l1", 
+          manager_id: localStorage.getItem("nexus_user_id") || "b26ab711-0000-0000-0000-000000000000", 
           action,
           edited_target: action === 'approve' ? editedData?.target : undefined,
           edited_weightage: action === 'approve' ? editedData?.weightage : undefined
