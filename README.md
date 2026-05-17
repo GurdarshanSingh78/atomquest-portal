@@ -1,7 +1,7 @@
 # 🌌 Nexus Tracker
 ### Next-Gen Multi-Role Goal Alignment, Telemetry & Compliance Audit Platform
 
-> **AtomQuest Hackathon 1.0** · Team ManSathi · Built by [Gurdarshan Singh](https://github.com/GurdarshanSingh78)
+> **AtomQuest Hackathon 1.0** · Built by [Gurdarshan Singh](https://github.com/GurdarshanSingh78)
 
 [![Next.js](https://img.shields.io/badge/Next.js-App%20Router-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?style=flat-square&logo=supabase)](https://supabase.com)
